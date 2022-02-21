@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-import argparse, logging, sys
+import argparse, logging, subprocess, sys
 
 from asciimatics.widgets import (Frame, TextBox, Layout, Label, Divider, Text, 
     CheckBox, RadioButtons, Button, PopUpDialog, TimePicker, DatePicker, 
@@ -19,10 +19,8 @@ from codebox import CodeBox
 
 # ===========================================================================
 
-PAUSE = 0.5
-
-logging.basicConfig(filename="debug.log", level=logging.DEBUG)
-logger = logging.getLogger()
+#logging.basicConfig(filename="debug.log", level=logging.DEBUG)
+#logger = logging.getLogger()
 
 content = ''
 slim_frame = None
@@ -55,12 +53,17 @@ class SlimFrame(Frame):
         layout = Layout([1, 1])
         self.add_layout(layout)
 
+        layout.add_widget(Button("Send", self.do_send), 0)
         layout.add_widget(Button("Quit", self.do_quit), 1)
 
         self.fix()
 
     def do_quit(self):
         raise StopApplication('done' + str(self.data))
+
+    def do_send(self):
+        send_next_line()
+
 
 # ===========================================================================
 
@@ -74,41 +77,31 @@ def make_it_so(screen, scene):
     ], -1)], stop_on_resize=True, start_scene=scene, allow_int=True)
 
 
-def key_caught():
+def send_next_line():
     global slim_frame, PAUSE
-    logger.debug('================================')
 
     box = slim_frame.codebox
     code_line = box._reflowed_text[box._line][0]
-    logger.debug('code_line: %s', code_line)
     prev_line = ''
     output = ''
+    keyset = ''
 
     if box._line > 1:
-        logger.debug('prev_line: %s', prev_line)
         prev_line = box._reflowed_text[box._line - 1][0]
 
     code_indent = len(code_line) - len(code_line.lstrip())
     prev_indent = len(prev_line) - len(prev_line.lstrip())
 
-    logger.debug('code_indent: %s', code_indent)
-    logger.debug('prev_indent: %s', prev_indent)
-
-    if not code_line.strip():
-        # Empty line
-        pyautogui.press('enter')
-        output = '<enter>'
-    else:
-        if code_indent > prev_indent:
-            # More indent
-            pyautogui.press('tab')
-            output += '<tab>'
-        elif code_indent < prev_indent:
-            # Less indent, possibly several times
-            outdent = (prev_indent - code_indent) // 4
-            for _ in range(0, outdent):
-                pyautogui.press('backspace')
-                output += '<bs>'
+    if code_indent > prev_indent:
+        # More indent
+        keyset += '<c:tab>'
+        output += '<tab>'
+    elif code_indent < prev_indent:
+        # Less indent, possibly several times
+        outdent = (prev_indent - code_indent) // 4
+        for _ in range(0, outdent):
+            keyset += '<c:delete>'
+            output += '<bs>'
 
     # Show result in local debug text box
     output += code_line.lstrip()
@@ -116,8 +109,15 @@ def key_caught():
     slim_frame.output_box.value = output
 
     # Type result in actual window
-    pyautogui.write(code_line.lstrip(), PAUSE)
-    pyautogui.press('enter')
+    keyset += code_line.lstrip()
+    keyset += '<c:enter>'
+
+    subprocess.run([
+        '/usr/local/bin/sendkeys',
+        '--application-name',
+        'PyCharm',
+        '--characters',
+        f'{keyset}'])
 
     # Line done, move to next one
     slim_frame.codebox._change_line(1)
@@ -129,19 +129,11 @@ parser = argparse.ArgumentParser()
 parser.add_argument('filename', help='Name of file to inject with')
 
 
-def log_keystroke(key):
-    if str(key) == 'Key.f13':
-        key_caught()
-
-
 if __name__ == '__main__':
     last_scene = None
     args = parser.parse_args()
     with open(args.filename) as f:
         content = f.read()
-
-    listener = keyboard.Listener(on_release=log_keystroke)
-    listener.start()
 
     while True:
         try:
