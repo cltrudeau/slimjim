@@ -1,24 +1,17 @@
 #!/usr/bin/env python
-import argparse, logging, subprocess, sys
+import argparse, subprocess, sys
 
-from asciimatics.widgets import (Frame, TextBox, Layout, Label, Divider, Text, 
-    CheckBox, RadioButtons, Button, PopUpDialog, TimePicker, DatePicker, 
-    DropdownList, PopupMenu)
+from asciimatics.widgets import Frame, Layout, Text, Button
 from asciimatics.effects import Background
-from asciimatics.event import MouseEvent
 from asciimatics.scene import Scene
 from asciimatics.screen import Screen
-from asciimatics.exceptions import (ResizeScreenError, NextScene, 
-    StopApplication, InvalidFields)
-from asciimatics.parsers import AsciimaticsParser
-
-import pyautogui
-from pynput import keyboard
+from asciimatics.exceptions import ResizeScreenError, StopApplication
 
 from codebox import CodeBox
 
 # ===========================================================================
 
+import logging
 #logging.basicConfig(filename="debug.log", level=logging.DEBUG)
 #logger = logging.getLogger()
 
@@ -127,7 +120,6 @@ def send_next_line():
 
 parser = argparse.ArgumentParser()
 parser.add_argument('filename', help='Name of file to inject with')
-
 
 if __name__ == '__main__':
     last_scene = None
