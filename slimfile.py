@@ -118,8 +118,16 @@ def send_next_line():
 
 # ---------------------------------------------------------------------------
 
-parser = argparse.ArgumentParser()
-parser.add_argument('filename', help='Name of file to inject with')
+DESCRIPTION = """
+Injects a file, line by line into the target application as typewritten key
+presses using the sendkeys application. 
+"""
+
+parser = argparse.ArgumentParser(description=DESCRIPTION)
+parser.add_argument('app', help=('Name of app to target keystrokes to'))
+parser.add_argument('filename', help='File containing content to inject ')
+parser.add_argument('-r', '--raw', action='store_true', help=("Type exactly "
+    "what is seen, don't compensate for auto-indent in the target"))
 
 if __name__ == '__main__':
     last_scene = None
