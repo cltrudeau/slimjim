@@ -1,0 +1,49 @@
+#!/usr/bin/env python
+import argparse
+
+from asciimatics.effects import Background
+from asciimatics.scene import Scene
+from asciimatics.screen import Screen
+
+from slimjim.spec_frame import SpecFrame
+from slimjim.util import common_args, validate_app
+
+# ===========================================================================
+
+#import logging
+#logging.basicConfig(filename="debug.log", level=logging.DEBUG)
+#logger = logging.getLogger()
+
+# ===========================================================================
+
+def make_it_so(screen, target_app, specfile, raw_mode):
+    frame = SpecFrame(screen, target_app, specfile, raw_mode)
+
+    screen.play([Scene([
+        Background(screen),
+        frame
+    ], -1)], stop_on_resize=True, start_scene=None, allow_int=True)
+
+# ---------------------------------------------------------------------------
+
+DESCRIPTION = """
+Injects content into the target application as typewritten key presses using
+the sendkeys application. Content is sourced from a spec file.  Lines
+beginning with "---:" are treated as instructions to the user, and are
+displayed but not typewritten. All other lines are treated as injection
+sources. Groups of lines between instructions are injected as single blocks.
+"""
+
+parser = argparse.ArgumentParser(description=DESCRIPTION)
+common_args(parser)
+
+parser.add_argument('spec', help=('Name of spec file containing content and '
+    'instructions')) 
+
+if __name__ == '__main__':
+    args = parser.parse_args()
+    validate_app(args.app)
+
+    # Fire up the TUI
+    Screen.wrapper(make_it_so, catch_interrupt=False, 
+        arguments=[args.app, args.spec, args.raw])

@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """This module implements a multi line editing text box"""
-from asciimatics.widgets.utilities import _find_min_start, _enforce_width, logger, _get_offset
-from asciimatics.widgets import TextBox
+from asciimatics.widgets.utilities import _find_min_start, _enforce_width
 
-import logging
-logger = logging.getLogger()
+# When asciimatics gets upgraded use the real TextBox
+from slimjim.matics_box import TextBox
 
 class CodeBox(TextBox):
     def update(self, frame_no):

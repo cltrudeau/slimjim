@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+
+######
+# This file is a copy of a future version of asciimatics's TextBox, one the
+# package gets upgraded this can be removed
+######
+
 """This module implements a multi line editing text box"""
 from __future__ import division
 from __future__ import absolute_import
